@@ -7,57 +7,65 @@ export default function Cadastro() {
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+  const [telefone, setTelefone] = useState("");
+  const [cargo, setCargo] = useState("CLIENTE");
 
-  function cadastrar(e) {
+  async function cadastrar(e) {
     e.preventDefault();
 
-    const usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+    try {
+      if (!nome || !email || !senha) {
+        alert("Preencha todos os campos!");
+        return;
+      }
 
-    const existe = usuarios.find(u => u.email === email);
+      const response = await fetch("http://localhost:8080/clientes", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          nome,
+          email,
+          senha,
+          telefone,
+          cargo
+        })
+      });
 
-    if (existe) {
-      alert("Usuário já existe!");
-      return;
+      if (!response.ok) {
+        throw new Error("Erro ao cadastrar");
+      }
+
+      alert("Cadastro realizado com sucesso!");
+      navigate("/");
+
+    } catch (error) {
+      console.error(error);
+      alert("Erro ao cadastrar no servidor!");
     }
-
-    usuarios.push({ nome, email, senha });
-
-    localStorage.setItem("usuarios", JSON.stringify(usuarios));
-
-    alert("Cadastro realizado com sucesso!");
-    navigate("/");
   }
 
   return (
-    <div className="container">
-      <h1 className="title">Cadastro 📝</h1>
+    <div className="cadastro-page">
+      <div className="cadastro-card">
 
-      <form onSubmit={cadastrar}>
-        <input
-          className="input"
-          placeholder="Nome"
-          onChange={(e) => setNome(e.target.value)}
-        />
+        <h1>Cadastro</h1>
 
-        <input
-          className="input"
-          placeholder="Email"
-          onChange={(e) => setEmail(e.target.value)}
-        />
+        <form className="cadastro-form" onSubmit={cadastrar}>
+          <input placeholder="Nome" value={nome} onChange={(e) => setNome(e.target.value)} />
+          <input placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <input type="password" placeholder="Senha" value={senha} onChange={(e) => setSenha(e.target.value)} />
+          <input placeholder="Telefone" value={telefone} onChange={(e) => setTelefone(e.target.value)} />
 
-        <input
-          className="input"
-          type="password"
-          placeholder="Senha"
-          onChange={(e) => setSenha(e.target.value)}
-        />
+          <button type="submit">Cadastrar</button>
+        </form>
 
-        <button className="button">Cadastrar</button>
-      </form>
+        <button className="voltar-login-btn" onClick={() => navigate("/")}>
+          Voltar
+        </button>
 
-      <button className="button" onClick={() => navigate("/")}>
-        Voltar para Login
-      </button>
+      </div>
     </div>
   );
 }

@@ -1,100 +1,166 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 
 export default function Agendamento() {
-  const unidade = localStorage.getItem("unidade");
-  const servico = localStorage.getItem("servico");
-  const profissional = localStorage.getItem("profissional");
+  const unidade =
+    localStorage.getItem("unidade") || "";
 
-  const hoje = new Date().toISOString().split("T")[0];
+  const servico =
+    localStorage.getItem("servico") || "";
+
+  const profissional =
+    localStorage.getItem("profissional") || "";
+
+  const hoje =
+    new Date().toISOString().split("T")[0];
 
   const [data, setData] = useState(hoje);
-  const [agenda, setAgenda] = useState({});
 
-  useEffect(() => {
+  const [ocupados, setOcupados] = useState([]);
+
+  const horariosPadrao = [
+    "09:00",
+    "10:00",
+    "11:00",
+    "14:00",
+    "15:00",
+    "16:00",
+  ];
+
+  async function carregarHorarios() {
     try {
-      const agendaSalva = JSON.parse(localStorage.getItem("agenda"));
+      const response = await fetch(
+        `http://localhost:8080/agendamentos/ocupados?data=${data}&profissional=${profissional}`
+      );
 
-      if (agendaSalva) {
-        setAgenda(agendaSalva);
-      } else {
-        const agendaInicial = {
-          João: {
-            [hoje]: ["09:00", "10:00", "14:00"]
-          },
-          Carlos: {
-            [hoje]: ["11:00", "15:00"]
-          }
-        };
+      const lista = await response.json();
 
-        setAgenda(agendaInicial);
-        localStorage.setItem("agenda", JSON.stringify(agendaInicial));
-      }
+      const horarios =
+        lista.map(item => item.horario);
+
+      setOcupados(horarios);
+
     } catch (error) {
-      console.error("Erro ao carregar agenda", error);
-    }
-  }, []);
-
-  const horarios = agenda?.[profissional]?.[data] || [];
-
-  function agendar(hora) {
-    try {
-      const novaAgenda = { ...agenda };
-
-      if (!novaAgenda[profissional]) {
-        novaAgenda[profissional] = {};
-      }
-
-      if (!novaAgenda[profissional][data]) {
-        novaAgenda[profissional][data] = [];
-      }
-
-      novaAgenda[profissional][data] =
-        novaAgenda[profissional][data].filter(h => h !== hora);
-
-      setAgenda(novaAgenda);
-      localStorage.setItem("agenda", JSON.stringify(novaAgenda));
-
-      alert(`Agendado para ${data} às ${hora} ✅`);
-    } catch (error) {
-      console.error("Erro ao agendar", error);
+      console.error(error);
     }
   }
 
-  return (
-    <div className="container">
-      <h1 className="title">Agendamento 📅</h1>
+  useEffect(() => {
+    carregarHorarios();
+  }, [data]);
 
-      <div className="resumo">
-        <p><strong>Unidade:</strong> {unidade || "Não selecionado"}</p>
-        <p><strong>Serviço:</strong> {servico || "Não selecionado"}</p>
-        <p><strong>Profissional:</strong> {profissional || "Não selecionado"}</p>
+  async function agendar(hora) {
+
+    try {
+
+      const dados = {
+        data,
+        horario: hora,
+        profissional,
+        servico
+      };
+
+      const response = await fetch(
+        "http://localhost:8080/agendamentos",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+          body: JSON.stringify(dados)
+        }
+      );
+
+      const mensagem =
+        await response.text();
+
+      if (!response.ok) {
+        toast.error(mensagem);
+        return;
+      }
+
+      toast.success(
+        `Agendamento confirmado às ${hora}`
+      );
+
+      carregarHorarios();
+
+    } catch (error) {
+
+      console.error(error);
+
+      toast.error(
+        "Erro ao conectar ao servidor"
+      );
+    }
+  }
+
+  const horariosDisponiveis =
+    horariosPadrao.filter(
+      hora => !ocupados.includes(hora)
+    );
+
+  return (
+    <div className="servicos-page">
+
+      <div className="servicos-header">
+        <h1>THALITON BARBER</h1>
+        <p>Confirme seu horário</p>
       </div>
 
-      <h3>Escolha a data</h3>
+      <div className="agendamento-card">
 
-      <input
-        type="date"
-        className="input"
-        value={data}
-        min={hoje}
-        onChange={(e) => setData(e.target.value)}
-      />
+        <p>📍 {unidade}</p>
 
-      <h3>Horários disponíveis</h3>
+        <p>✂️ {servico}</p>
 
-      {horarios.length > 0 ? (
-        horarios.map((hora, i) => (
-          <button
-            key={i}
-            className="button"
-            onClick={() => agendar(hora)}
-          >
-            {hora}
-          </button>
-        ))
-      ) : (
-        <p>Sem horários disponíveis 😢</p>
-      )}
+        <p>💈 {profissional}</p>
+
+        <input
+          type="date"
+          value={data}
+          min={hoje}
+          onChange={(e) =>
+            setData(e.target.value)
+          }
+          className="data-input"
+        />
+
+        <h3>Horários Disponíveis</h3>
+
+        <div className="horarios-grid">
+
+          {horariosDisponiveis.length > 0 ? (
+
+            horariosDisponiveis.map(
+              (hora) => (
+
+                <button
+                  key={hora}
+                  className="horario-btn"
+                  onClick={() =>
+                    agendar(hora)
+                  }
+                >
+                  {hora}
+                </button>
+
+              )
+            )
+
+          ) : (
+
+            <p>
+              Nenhum horário disponível
+            </p>
+
+          )}
+
+        </div>
+
+      </div>
+
     </div>
   );
 }

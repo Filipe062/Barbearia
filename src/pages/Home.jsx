@@ -10,7 +10,7 @@ export default function Home() {
     const usuario = localStorage.getItem("usuarioLogado");
 
     if (!usuario) {
-      setErro("Você precisa estar logado para agendar");
+      setErro("Faça login para agendar");
       setTimeout(() => navigate("/login"), 1500);
     } else {
       navigate("/unidades");
@@ -18,72 +18,113 @@ export default function Home() {
   }
 
   return (
-    <div>
+    <div className="home">
 
       {/* HERO */}
       <section className="hero">
-        <img src={logo} alt="logo" className="logo" />
+        <div className="overlay"></div>
 
-        <h1>Barbearia Thaliton ✂️</h1>
-        <p>Estilo, tradição e o melhor atendimento da região</p>
+        <div className="hero-content">
+          <img src={logo} alt="Logo" className="logo" />
 
-        <button className="button" onClick={irParaAgendamento}>
-          Agendar agora
-        </button>
+          <h1>THALITON BARBER</h1>
 
-        <button
-          className="button"
-          style={{ marginTop: "10px", background: "#333", color: "#fff" }}
-          onClick={() => navigate("/login")}
-        >
-          Área do Cliente
-        </button>
-
-        {/* MENSAGEM DE ERRO */}
-        {erro && (
-          <p style={{ color: "red", marginTop: "10px" }}>
-            {erro}
+          <p className="slogan">
+            Corte • Barba • Visagismo
           </p>
-        )}
-      </section>
 
-      {/* SOBRE */}
-      <section className="section">
-        <h2>Sobre nós</h2>
-        <p>
-          Somos especialistas em cortes modernos, barba e estilo.
-          Oferecemos um atendimento premium com profissionais experientes
-          para garantir sua melhor aparência.
-        </p>
+          <div className="hero-buttons">
+            <button
+              className="btn-primary"
+              onClick={irParaAgendamento}
+            >
+              AGENDAR HORÁRIO
+            </button>
+
+            <button
+              className="btn-secondary"
+              onClick={() =>
+                window.open(
+                  "https://instagram.com/thalitonbarber",
+                  "_blank"
+                )
+              }
+            >
+              INSTAGRAM
+            </button>
+          </div>
+
+          {erro && <span className="erro">{erro}</span>}
+
+          <div className="info-box">
+            <p>📍 Vila Brasília - Aparecida de Goiânia</p>
+            <p>📞 WhatsApp: (64) 98169-6734</p>
+            <p>🕒 Atendimento com horário marcado</p>
+          </div>
+        </div>
       </section>
 
       {/* SERVIÇOS */}
-      <section className="section">
+      <section className="section dark">
         <h2>Serviços</h2>
 
-        <div className="card">Corte ✂️ - R$ 30</div>
-        <div className="card">Barba 🧔 - R$ 25</div>
-      </section>
+        <div className="grid">
 
-      {/* PROFISSIONAIS */}
-      <section className="section">
-        <h2>Profissionais</h2>
+          <div className="card">
+            <h3>✂️ Corte Masculino</h3>
+          </div>
 
-        <div className="card">João 💈</div>
-        <div className="card">Carlos 💈</div>
+          <div className="card">
+            <h3>🧔 Barba</h3>
+          </div>
+
+          <div className="card">
+            <h3>🔥 Corte + Barba</h3>
+          </div>
+
+          <div className="card">
+            <h3>✨ Visagismo</h3>
+          </div>
+
+        </div>
       </section>
 
       {/* CONTATO */}
       <section className="section">
         <h2>Contato</h2>
-        <p>📍 Goiânia - GO</p>
-        <p>📞 (64) 98169-6734</p>
+
+        <div className="contact-box">
+
+          <p>📍 Vila Brasília - Aparecida de Goiânia</p>
+
+          <p>
+            📞 WhatsApp:
+            <a
+              href="https://wa.me/5564981696734"
+              target="_blank"
+              rel="noreferrer"
+            >
+              {" "}Entrar em contato
+            </a>
+          </p>
+
+          <p>
+            📸 Instagram:
+            <a
+              href="https://instagram.com/thalitonbarber"
+              target="_blank"
+              rel="noreferrer"
+            >
+              {" "}@thalitonbarber
+            </a>
+          </p>
+
+        </div>
       </section>
 
-      {/* RODAPÉ */}
+      {/* FOOTER */}
       <footer className="footer">
-        <p>© 2026 Barbearia Thaliton</p>
-        <p>Instagram | WhatsApp</p>
+        <p>© 2026 THALITON BARBER</p>
       </footer>
 
     </div>

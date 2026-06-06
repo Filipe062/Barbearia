@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import logo from "..//assets/logo.jpeg";
+import logo from "../assets/logo.jpeg";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -8,63 +8,71 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
 
-  function logar(e) {
+  async function logar(e) {
     e.preventDefault();
 
-    const usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+    try {
+      const response = await fetch("http://localhost:8080/clientes/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email, senha })
+      });
 
-    const usuario = usuarios.find(
-      (u) => u.email === email && u.senha === senha
-    );
+      const usuario = await response.json();
 
-    if (!usuario) {
-      alert("Email ou senha inválidos!");
-      return;
+      if (!usuario || !usuario.id) {
+        alert("Email ou senha inválidos!");
+        return;
+      }
+
+      localStorage.setItem("usuarioLogado", JSON.stringify(usuario));
+
+      navigate("/unidades");
+
+    } catch (error) {
+      alert("Erro ao conectar com servidor");
     }
-
-    localStorage.setItem("usuarioLogado", JSON.stringify(usuario));
-
-    navigate("/unidades");
   }
 
   return (
-    <div className="container">
-      {/* LOGO */}
-      <img src={logo} alt="Logo" className="logo" />
+    <div className="login-page">
 
-      {/* NOME */}
-      <h1 className="title">Barbearia Thaliton ✂️</h1>
+      <div className="login-card">
 
-      {/* FORM */}
-      <form onSubmit={logar}>
-        <input
-          className="input"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
+        <img src={logo} alt="logo" className="login-logo" />
 
-        <input
-          className="input"
-          type="password"
-          placeholder="Senha"
-          value={senha}
-          onChange={(e) => setSenha(e.target.value)}
-        />
+        <h1>THALITON BARBER</h1>
+        <p>Faça login para continuar</p>
 
-        <button className="button">Entrar</button>
-      </form>
+        <form className="login-form" onSubmit={logar}>
 
-      <button className="button" onClick={() => navigate("/cadastro")}>
-        Criar conta
-      </button>
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
 
-      {/* RODAPÉ */}
-      <div className="footer">
-        <p>© 2026 Barbearia Thaliton</p>
-        <p>
-          <a href="#">Instagram</a> | <a href="#">WhatsApp</a>
-        </p>
+          <input
+            type="password"
+            placeholder="Senha"
+            value={senha}
+            onChange={(e) => setSenha(e.target.value)}
+          />
+
+          <button type="submit">Entrar</button>
+
+        </form>
+
+        <button
+          className="cadastro-btn"
+          onClick={() => navigate("/cadastro")}
+        >
+          Criar Conta
+        </button>
+
       </div>
     </div>
   );
