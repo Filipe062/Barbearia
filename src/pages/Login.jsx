@@ -31,12 +31,14 @@ export default function Login() {
         })
       });
 
-      if (!response.ok) {
+      const texto = await response.text();
+
+      if (!response.ok || !texto) {
         alert("Email ou senha inválidos!");
         return;
       }
 
-      const usuario = await response.json();
+      const usuario = JSON.parse(texto);
 
       if (!usuario || !usuario.id) {
         alert("Email ou senha inválidos!");
@@ -100,3 +102,4 @@ export default function Login() {
     </div>
   );
 }
+
